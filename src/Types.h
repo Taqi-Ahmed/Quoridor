@@ -5,16 +5,11 @@ private:
     int x;
     int y;
 
-public:
-    // Basic getters
-    int getX(){
-        return this->x;
-    }
-    int getY(){
-        return this->y;
-    }
-
+    bool operator==(const Position& other) const;
+    bool operator<(const Position& other) const;
 };
+
+
 
 struct Wall {
     Position pos;
