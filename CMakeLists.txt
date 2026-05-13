@@ -15,6 +15,8 @@ qt_add_executable(Quoridor
     src/game.h
     src/gameEngine.cpp 
     src/gameEngine.h
+    src/Types.h
+    src/Types.cpp
 )
 
 target_link_libraries(Quoridor
