@@ -1,9 +1,15 @@
 #ifndef TYPES_H
 #define TYPES_H
 struct Position {
+private:
     int x;
     int y;
+
+    bool operator==(const Position& other) const;
+    bool operator<(const Position& other) const;
 };
+
+
 
 struct Wall {
     Position pos;
