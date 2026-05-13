@@ -1,8 +1,19 @@
 #ifndef TYPES_H
 #define TYPES_H
 struct Position {
+private:
     int x;
     int y;
+
+public:
+    // Basic getters
+    int getX(){
+        return this->x;
+    }
+    int getY(){
+        return this->y;
+    }
+
 };
 
 struct Wall {
