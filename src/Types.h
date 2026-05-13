@@ -5,10 +5,10 @@ private:
     int x;
     int y;
 public:
-    int get_x() {return x};
-    int get_y() {return y};
-    void set_x(int new_x) {x = new_x};
-    void set_y(int new_y) {y = new_y};
+    int get_x() {return x;}
+    int get_y() {return y;}
+    void set_x(int new_x) {x = new_x;}
+    void set_y(int new_y) {y = new_y;}
     bool operator==(const Position& other) const;
     bool operator<(const Position& other) const;
 };
