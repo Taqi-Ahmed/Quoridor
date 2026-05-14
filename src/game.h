@@ -18,7 +18,7 @@ private:
     // Turn tracking (e.g., 1 for P1, 2 for P2)
     int current_turn;
     bool BFS_search();
-    bool isWallbetween(Position from, Position to);
+    bool isWallbetween(Wall wall);
 
 public:
     // Methods you'll need to implement Phase 1 & 3:
