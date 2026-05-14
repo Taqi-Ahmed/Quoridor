@@ -11,11 +11,97 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>MainWindow</string>
+   <string>Quoridor</string>
+  </property>
+  <property name="autoFillBackground">
+   <bool>true</bool>
+  </property>
+  <property name="styleSheet">
+   <string notr="true">/* --- GAMING TITLE (SMOOTH MODERN FONT) --- */
+QLabel {
+    color: #ffffff;
+    font-size: 50px;
+    font-weight: 800; /* Bold, but smoother than 900 */
+    font-family: &quot;Segoe UI&quot;, &quot;Roboto&quot;, &quot;Montserrat&quot;, &quot;Helvetica Neue&quot;, sans-serif;
+    text-transform: uppercase;
+    letter-spacing: 12px; /* Spaced out for a cinematic look */
+}
+
+/* --- BASE GAMING BUTTON (SMOOTH FONT) --- */
+QPushButton {
+    background-color: #121212; 
+    color: #ffffff;
+    font-size: 16px;
+    font-weight: 700;
+    font-family: &quot;Segoe UI&quot;, &quot;Roboto&quot;, &quot;Montserrat&quot;, sans-serif;
+    text-transform: uppercase;
+    letter-spacing: 2px; /* Slight spacing makes text look cleaner */
+    border: 2px solid #2a2a2a;
+    border-radius: 6px; /* Slightly softer corners */
+    padding: 16px;
+}
+
+/* --- PLAY VS HUMAN (CYAN NEON) --- */
+QPushButton#HumanBtn {
+    border-bottom: 4px solid #00f3ff;
+}
+QPushButton#HumanBtn:hover {
+    background-color: #00f3ff;
+    color: #000000; 
+    border: 2px solid #00f3ff;
+    border-bottom: 4px solid #00f3ff;
+}
+QPushButton#HumanBtn:pressed {
+    background-color: #00a4ac;
+}
+
+/* --- PLAY VS AI (CRIMSON NEON) --- */
+QPushButton#AIBtn {
+    border-bottom: 4px solid #ff003c;
+}
+QPushButton#AIBtn:hover {
+    background-color: #ff003c;
+    color: #000000;
+    border: 2px solid #ff003c;
+    border-bottom: 4px solid #ff003c;
+}
+QPushButton#AIBtn:pressed {
+    background-color: #a80026;
+}
+
+/* --- RULES (MAGENTA NEON) --- */
+QPushButton#rulesBtn {
+    border-bottom: 4px solid #d500f9;
+}
+QPushButton#rulesBtn:hover {
+    background-color: #d500f9;
+    color: #000000;
+    border: 2px solid #d500f9;
+    border-bottom: 4px solid #d500f9;
+}
+QPushButton#rulesBtn:pressed {
+    background-color: #9200ab;
+}
+
+/* --- QUIT (WARNING ORANGE NEON) --- */
+QPushButton#quitBtn {
+    border-bottom: 4px solid #ffaa00;
+}
+QPushButton#quitBtn:hover {
+    background-color: #ffaa00;
+    color: #000000;
+    border: 2px solid #ffaa00;
+    border-bottom: 4px solid #ffaa00;
+}
+QPushButton#quitBtn:pressed {
+    background-color: #b37700;
+}</string>
   </property>
   <widget class="QWidget" name="centralwidget">
    <property name="styleSheet">
-    <string notr="true"/>
+    <string notr="true">QWidget#centralwidget { 
+	background-color: qlineargradient(spread:repeat, x1:0.5, y1:0, x2:0.5, y2:1, stop:0 rgba(0, 0, 255, 255), stop:1 rgba(255, 0, 0, 255));
+}</string>
    </property>
    <layout class="QVBoxLayout" name="verticalLayout_2">
     <item>
@@ -24,7 +110,7 @@
        <bool>false</bool>
       </property>
       <property name="text">
-       <string>QOURIDOR</string>
+       <string>QUORIDOR</string>
       </property>
       <property name="alignment">
        <set>Qt::AlignmentFlag::AlignCenter</set>
@@ -34,7 +120,7 @@
     <item>
      <layout class="QVBoxLayout" name="verticalLayout">
       <property name="spacing">
-       <number>1</number>
+       <number>15</number>
       </property>
       <property name="sizeConstraint">
        <enum>QLayout::SizeConstraint::SetDefaultConstraint</enum>
@@ -43,16 +129,22 @@
        <number>100</number>
       </property>
       <property name="topMargin">
-       <number>100</number>
+       <number>80</number>
       </property>
       <property name="rightMargin">
        <number>100</number>
       </property>
       <property name="bottomMargin">
-       <number>0</number>
+       <number>40</number>
       </property>
       <item>
        <widget class="QPushButton" name="HumanBtn">
+        <property name="cursor">
+         <cursorShape>PointingHandCursor</cursorShape>
+        </property>
+        <property name="autoFillBackground">
+         <bool>false</bool>
+        </property>
         <property name="text">
          <string>Play vs Human</string>
         </property>
@@ -60,13 +152,29 @@
       </item>
       <item>
        <widget class="QPushButton" name="AIBtn">
+        <property name="cursor">
+         <cursorShape>PointingHandCursor</cursorShape>
+        </property>
         <property name="text">
          <string>Play Vs AI</string>
         </property>
        </widget>
       </item>
       <item>
+       <widget class="QPushButton" name="rulesBtn">
+        <property name="cursor">
+         <cursorShape>PointingHandCursor</cursorShape>
+        </property>
+        <property name="text">
+         <string>Rules</string>
+        </property>
+       </widget>
+      </item>
+      <item>
        <widget class="QPushButton" name="quitBtn">
+        <property name="cursor">
+         <cursorShape>PointingHandCursor</cursorShape>
+        </property>
         <property name="text">
          <string>Quit</string>
         </property>

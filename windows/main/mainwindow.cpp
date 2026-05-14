@@ -1,12 +1,25 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include "../game/gamewindow.h"
+#include <QApplication>
+#include <QScreen>
+#include <QStyle>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+    this->setFixedSize(800,600);
+    this->setWindowFlags(Qt::Window | Qt::WindowMinimizeButtonHint | Qt::WindowCloseButtonHint);
+    this->setGeometry(
+        QStyle::alignedRect(
+            Qt::LeftToRight,
+            Qt::AlignCenter,
+            this->size(),
+            QApplication::primaryScreen()->availableGeometry()
+            )
+        );
 }
 
 MainWindow::~MainWindow()
