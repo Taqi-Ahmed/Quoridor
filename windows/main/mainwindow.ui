@@ -18,7 +18,7 @@
   </property>
   <property name="styleSheet">
    <string notr="true">/* --- GAMING TITLE (SMOOTH MODERN FONT) --- */
-QLabel {
+QLabel #label{
     color: #ffffff;
     font-size: 50px;
     font-weight: 800; /* Bold, but smoother than 900 */

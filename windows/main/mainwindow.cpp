@@ -4,6 +4,7 @@
 #include <QApplication>
 #include <QScreen>
 #include <QStyle>
+#include <QMessageBox>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -43,5 +44,21 @@ void MainWindow::on_HumanBtn_clicked()
 void MainWindow::on_quitBtn_clicked()
 {
     QApplication::quit();
+}
+
+
+void MainWindow::on_rulesBtn_clicked()
+{
+    QMessageBox ruleBox(this);
+
+    ruleBox.setWindowTitle("Quoridor Rules");
+    ruleBox.setText(QUORIDOR_RULES);
+    ruleBox.setTextFormat(Qt::RichText);
+
+
+    ruleBox.setWindowFlags(Qt::Dialog | Qt::CustomizeWindowHint | Qt::WindowTitleHint | Qt::WindowCloseButtonHint);
+    ruleBox.exec();
+
+
 }
 
