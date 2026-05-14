@@ -21,12 +21,19 @@ private:
     int current_turn;
     bool BFS_search();
     bool isWallbetween(Wall wall);
+    bool isWallBlocking(Wall wall,Player player, Position target);
+    bool isOutOfBounds(Position pos);
+    bool isOneStepMove(Position move);
+    bool wallBlocksMove(Player player, Position target);
+    bool isDiagonalValid(Player player, Position target, Player opp);
 
 public:
     // Methods you'll need to implement Phase 1 & 3:
-    bool is_valid_pawn_move(Player p, Position target);
+    bool is_valid_pawn_move(Player p, Position target,Player opp);
+    vector<Position> getValidMoves();
     bool is_valid_wall_placement(bool is_horizontal, int r, int c);
     void movePlayer(Player &player, Position pos);
     void placeWall(Position pos, bool isHorizontal);
+    
 };
 #endif

@@ -10,7 +10,8 @@ qt_standard_project_setup()
 qt_add_executable(Quoridor
     WIN32 MACOSX_BUNDLE
     main.cpp
-    src/game.cpp src/game.h src/gameEngine.cpp src/gameEngine.h src/Types.h src/Types.cpp
+    src/game.cpp src/game.h src/gameEngine.cpp src/gameEngine.h
+    src/movement_rules.cpp src/Types.h src/Types.cpp
     windows/main/mainwindow.cpp windows/main/mainwindow.h windows/main/mainwindow.ui
     windows/game/gamewindow.cpp windows/game/gamewindow.h windows/game/gamewindow.ui
 )
