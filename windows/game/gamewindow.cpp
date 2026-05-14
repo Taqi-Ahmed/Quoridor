@@ -9,16 +9,65 @@
 #include <QIcon>
 #include <QRectF>
 
+namespace {
+
+gameWindow::BoardStyleSheets defaultBoardStyles()
+{
+    gameWindow::BoardStyleSheets s;
+    s.container = QStringLiteral(
+        "QWidget#boardContainer { background-color: #e2e8f0; }");
+
+    s.playableCell = QStringLiteral(
+        "QToolButton { background-color: #ffffff; border-radius: 5px; "
+        "padding: 0px; margin: 0px; border: none; }");
+
+    s.playableCellMoveHighlight = QStringLiteral(
+        "QToolButton { background-color: #ffffff; border-radius: 5px; "
+        "padding: 0px; margin: 0px; "
+        "border: 2px solid #22c55e; }"
+    "QToolButton:hover { background-color: #26e76d; }");
+
+    s.wallSlot = QStringLiteral(
+        "QPushButton { background-color: transparent; border: none; }"
+        "QPushButton:hover { background-color: transparent; }"
+        "QPushButton:pressed { background-color: transparent; }"
+        "QPushButton:focus { outline: none; }");
+
+    s.intersection = QStringLiteral(
+        "QPushButton {"
+        "  background-color: #9a9a9a;"
+        "  border: none;"
+        "  border-radius: 3px;"
+        "  margin: 3px;"
+        "}"
+        "QPushButton:hover {"
+        "  background-color: #9a9a9a;"
+        "}"
+        "QPushButton:pressed {"
+        "  background-color: #9a9a9a;"
+        "}"
+        "QPushButton:focus { outline: none; }");
+
+    return s;
+}
+
+} // namespace
+
 gameWindow::gameWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::gameWindow)
 {
     ui->setupUi(this);
 
+    boardStyles = defaultBoardStyles();
+    ui->boardContainer->setStyleSheet(boardStyles.container);
+
     renderBoard(); // Render the board
 
-    renderPawn(1, 4, QColor("#4285F4")); // Blue Pawn at "e9"
-    renderPawn(8, 4, QColor("#EA4335")); // Red Pawn at "e1"
+    renderPawn(8, 4, QColor("#4285F4")); // Blue Pawn at "e9"
+    renderPawn(0, 4, QColor("#EA4335")); // Red Pawn at "e1"
+
+    renderValidPawnMoveHighlights(QList<QPoint>() << QPoint(8, 5) << QPoint(8, 3) << QPoint(7, 4));
 }
 
 gameWindow::~gameWindow()
@@ -76,6 +125,28 @@ QAbstractButton *gameWindow::getWallCell(int row, int col) const {
     return getCell(row, col);
 }
 
+void gameWindow::applyBoardStyles()
+{
+    ui->boardContainer->setStyleSheet(boardStyles.container);
+
+    for (int row = 0; row < 17; ++row) {
+        for (int col = 0; col < 17; ++col) {
+            QAbstractButton *cell = getCell(row, col);
+            if (!cell) {
+                continue;
+            }
+            if (row % 2 == 0 && col % 2 == 0) {
+                cell->setStyleSheet(boardStyles.playableCell);
+            } else if ((row % 2 != 0 && col % 2 == 0)
+                       || (row % 2 == 0 && col % 2 != 0)) {
+                cell->setStyleSheet(boardStyles.wallSlot);
+            } else {
+                cell->setStyleSheet(boardStyles.intersection);
+            }
+        }
+    }
+}
+
 void gameWindow::renderBoard() {
     // Populate the grid layout created in Qt Designer
     for (int row = 0; row < 17; ++row) {
@@ -90,22 +161,34 @@ void gameWindow::renderBoard() {
                 tb->setToolButtonStyle(Qt::ToolButtonIconOnly);
                 tb->setAutoRaise(false);
                 tb->setFixedSize(cellSize, cellSize);
-                tb->setStyleSheet(
-                    "QToolButton { background-color: white; border-radius: 5px; "
-                    "padding: 0px; margin: 0px; border: none; }");
+                tb->setStyleSheet(boardStyles.playableCell);
                 cell = tb;
             } else if (row % 2 != 0 && col % 2 == 0) {
-                // Horizontal Wall Slot
-                cell = new QPushButton(this);
-                cell->setFixedSize(cellSize, wallSize);
+                // Horizontal wall slot (transparent until a wall is shown)
+                auto *wallBtn = new QPushButton(this);
+                wallBtn->setFlat(true);
+                wallBtn->setAutoDefault(false);
+                wallBtn->setDefault(false);
+                wallBtn->setFixedSize(cellSize, wallSize);
+                wallBtn->setStyleSheet(boardStyles.wallSlot);
+                cell = wallBtn;
             } else if (row % 2 == 0 && col % 2 != 0) {
-                // Vertical Wall Slot
-                cell = new QPushButton(this);
-                cell->setFixedSize(wallSize, cellSize);
+                auto *wallBtn = new QPushButton(this);
+                wallBtn->setFlat(true);
+                wallBtn->setAutoDefault(false);
+                wallBtn->setDefault(false);
+                wallBtn->setFixedSize(wallSize, cellSize);
+                wallBtn->setStyleSheet(boardStyles.wallSlot);
+                cell = wallBtn;
             } else {
-                // Intersection
-                cell = new QPushButton(this);
-                cell->setFixedSize(wallSize, wallSize);
+                // Intersection — small grey dot, no hover/press feedback
+                auto *dotBtn = new QPushButton(this);
+                dotBtn->setFlat(true);
+                dotBtn->setAutoDefault(false);
+                dotBtn->setDefault(false);
+                dotBtn->setFixedSize(wallSize, wallSize);
+                dotBtn->setStyleSheet(boardStyles.intersection);
+                cell = dotBtn;
             }
 
             // Add the cell to the layout created in Qt Designer
@@ -119,5 +202,26 @@ void gameWindow::renderPawn(int row, int col, QColor color) {
     if (cell) {
         cell->setIcon(createPawnIcon(color));
         cell->setIconSize(QSize(cellSize, cellSize));
+    }
+}
+
+void gameWindow::renderValidPawnMoveHighlights(const QList<QPoint> &moveTargets)
+{
+    clearValidPawnMoveHighlights();
+    for (const QPoint &p : moveTargets) {
+        if (QAbstractButton *cell = getPlayableCell(p.x(), p.y())) {
+            cell->setStyleSheet(boardStyles.playableCellMoveHighlight);
+        }
+    }
+}
+
+void gameWindow::clearValidPawnMoveHighlights()
+{
+    for (int r = 0; r < 9; ++r) {
+        for (int c = 0; c < 9; ++c) {
+            if (QAbstractButton *cell = getPlayableCell(r, c)) {
+                cell->setStyleSheet(boardStyles.playableCell);
+            }
+        }
     }
 }
