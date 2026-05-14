@@ -6,8 +6,10 @@
 #include <QToolButton>
 #include <QPainter>
 #include <QPixmap>
+#include <QEvent>
 #include <QIcon>
 #include <QRectF>
+#include <QWidget>
 
 namespace {
 
@@ -33,6 +35,13 @@ gameWindow::BoardStyleSheets defaultBoardStyles()
         "QPushButton:pressed { background-color: transparent; }"
         "QPushButton:focus { outline: none; }");
 
+    s.wallSlotHover = QStringLiteral(
+        "QPushButton { background-color: rgba(55, 55, 58, 0.45); border: 1px solid rgba(32, 32, 36, 0.88); "
+        "border-radius: 2px; }"
+        "QPushButton:hover { background-color: rgba(55, 55, 58, 0.58); }"
+        "QPushButton:pressed { background-color: rgba(55, 55, 58, 0.58); }"
+        "QPushButton:focus { outline: none; }");
+        
     s.intersection = QStringLiteral(
         "QPushButton {"
         "  background-color: #9a9a9a;"
@@ -45,6 +54,21 @@ gameWindow::BoardStyleSheets defaultBoardStyles()
         "}"
         "QPushButton:pressed {"
         "  background-color: #9a9a9a;"
+        "}"
+        "QPushButton:focus { outline: none; }");
+
+    s.intersectionHover = QStringLiteral(
+        "QPushButton {"
+        "  background-color: rgba(72, 72, 76, 0.72);"
+        "  border: 1px solid rgba(38, 38, 42, 0.92);"
+        "  border-radius: 3px;"
+        "  margin: 2px;"
+        "}"
+        "QPushButton:hover {"
+        "  background-color: rgba(72, 72, 76, 0.72);"
+        "}"
+        "QPushButton:pressed {"
+        "  background-color: rgba(72, 72, 76, 0.72);"
         "}"
         "QPushButton:focus { outline: none; }");
 
@@ -75,8 +99,7 @@ gameWindow::~gameWindow()
     delete ui;
 }
 
-QIcon gameWindow::createPawnIcon(const QColor &color) const
-{
+QIcon gameWindow::createPawnIcon(const QColor &color) const {
     QPixmap pixmap(cellSize, cellSize);
     pixmap.fill(Qt::transparent);
 
@@ -125,8 +148,9 @@ QAbstractButton *gameWindow::getWallCell(int row, int col) const {
     return getCell(row, col);
 }
 
-void gameWindow::applyBoardStyles()
-{
+void gameWindow::applyBoardStyles() {
+    m_wallHoverCells.clear();
+
     ui->boardContainer->setStyleSheet(boardStyles.container);
 
     for (int row = 0; row < 17; ++row) {
@@ -145,6 +169,36 @@ void gameWindow::applyBoardStyles()
             }
         }
     }
+}
+
+void gameWindow::installWallHoverTracking(QWidget *widget, int gridRow, int gridCol)
+{
+    widget->setProperty("boardGridRow", gridRow);
+    widget->setProperty("boardGridCol", gridCol);
+    widget->setAttribute(Qt::WA_Hover, true);
+    widget->setMouseTracking(true);
+    widget->installEventFilter(this);
+}
+
+bool gameWindow::eventFilter(QObject *watched, QEvent *event)
+{
+    auto *w = qobject_cast<QWidget *>(watched);
+    if (w && w->property("boardGridRow").isValid() && w->property("boardGridCol").isValid()) {
+        switch (event->type()) {
+        case QEvent::Enter:
+        case QEvent::HoverEnter:
+            renderWallHoverHighlight(w->property("boardGridRow").toInt(),
+                                     w->property("boardGridCol").toInt());
+            break;
+        case QEvent::Leave:
+        case QEvent::HoverLeave:
+            clearWallHoverHighlight();
+            break;
+        default:
+            break;
+        }
+    }
+    return QMainWindow::eventFilter(watched, event);
 }
 
 void gameWindow::renderBoard() {
@@ -171,6 +225,7 @@ void gameWindow::renderBoard() {
                 wallBtn->setDefault(false);
                 wallBtn->setFixedSize(cellSize, wallSize);
                 wallBtn->setStyleSheet(boardStyles.wallSlot);
+                installWallHoverTracking(wallBtn, row, col);
                 cell = wallBtn;
             } else if (row % 2 == 0 && col % 2 != 0) {
                 auto *wallBtn = new QPushButton(this);
@@ -179,6 +234,7 @@ void gameWindow::renderBoard() {
                 wallBtn->setDefault(false);
                 wallBtn->setFixedSize(wallSize, cellSize);
                 wallBtn->setStyleSheet(boardStyles.wallSlot);
+                installWallHoverTracking(wallBtn, row, col);
                 cell = wallBtn;
             } else {
                 // Intersection — small grey dot, no hover/press feedback
@@ -188,6 +244,7 @@ void gameWindow::renderBoard() {
                 dotBtn->setDefault(false);
                 dotBtn->setFixedSize(wallSize, wallSize);
                 dotBtn->setStyleSheet(boardStyles.intersection);
+                installWallHoverTracking(dotBtn, row, col);
                 cell = dotBtn;
             }
 
@@ -205,8 +262,7 @@ void gameWindow::renderPawn(int row, int col, QColor color) {
     }
 }
 
-void gameWindow::renderValidPawnMoveHighlights(const QList<QPoint> &moveTargets)
-{
+void gameWindow::renderValidPawnMoveHighlights(const QList<QPoint> &moveTargets) {
     clearValidPawnMoveHighlights();
     for (const QPoint &p : moveTargets) {
         if (QAbstractButton *cell = getPlayableCell(p.x(), p.y())) {
@@ -215,13 +271,74 @@ void gameWindow::renderValidPawnMoveHighlights(const QList<QPoint> &moveTargets)
     }
 }
 
-void gameWindow::clearValidPawnMoveHighlights()
-{
+void gameWindow::clearValidPawnMoveHighlights() {
     for (int r = 0; r < 9; ++r) {
         for (int c = 0; c < 9; ++c) {
             if (QAbstractButton *cell = getPlayableCell(r, c)) {
                 cell->setStyleSheet(boardStyles.playableCell);
             }
+        }
+    }
+}
+
+void gameWindow::clearWallHoverHighlight()
+{
+    for (const QPoint &p : m_wallHoverCells) {
+        const int r = p.x();
+        const int c = p.y();
+        if (QAbstractButton *btn = getCell(r, c)) {
+            if (r % 2 == 0 && c % 2 == 0) {
+                btn->setStyleSheet(boardStyles.playableCell);
+            } else if ((r % 2 != 0 && c % 2 == 0) || (r % 2 == 0 && c % 2 != 0)) {
+                btn->setStyleSheet(boardStyles.wallSlot);
+            } else {
+                btn->setStyleSheet(boardStyles.intersection);
+            }
+        }
+    }
+    m_wallHoverCells.clear();
+}
+
+void gameWindow::renderWallHoverHighlight(int gridRow, int gridCol)
+{
+    clearWallHoverHighlight();
+
+    if (gridRow < 0 || gridRow > 16 || gridCol < 0 || gridCol > 16) {
+        return;
+    }
+
+    const bool horizontal = (gridRow % 2 == 1) && (gridCol % 2 == 0);
+    const bool vertical = (gridRow % 2 == 0) && (gridCol % 2 == 1);
+    const bool intersection = (gridRow % 2 == 1) && (gridCol % 2 == 1);
+
+    QList<QPoint> cells;
+
+    if (horizontal) {
+        const int k = qBound(0, gridCol / 2, 7);
+        cells << QPoint(gridRow, 2 * k) << QPoint(gridRow, 2 * k + 1) << QPoint(gridRow, 2 * k + 2);
+    } else if (vertical) {
+        const int k = qBound(0, gridRow / 2, 7);
+        cells << QPoint(2 * k, gridCol) << QPoint(2 * k + 1, gridCol) << QPoint(2 * k + 2, gridCol);
+    } else if (intersection) {
+        cells << QPoint(gridRow, gridCol);
+        if (gridRow > 0) {
+            cells << QPoint(gridRow - 1, gridCol);
+        }
+        if (gridRow < 16) {
+            cells << QPoint(gridRow + 1, gridCol);
+        }
+    } else {
+        return;
+    }
+
+    m_wallHoverCells = cells;
+
+    for (const QPoint &p : m_wallHoverCells) {
+        if (QAbstractButton *btn = getCell(p.x(), p.y())) {
+            const int r = p.x();
+            const int c = p.y();
+            const bool isDot = (r % 2 == 1) && (c % 2 == 1);
+            btn->setStyleSheet(isDot ? boardStyles.intersectionHover : boardStyles.wallSlotHover);
         }
     }
 }

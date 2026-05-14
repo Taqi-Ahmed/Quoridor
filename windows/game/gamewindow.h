@@ -13,6 +13,8 @@ namespace Ui {
 class gameWindow;
 }
 
+class QWidget;
+
 class gameWindow : public QMainWindow
 {
     Q_OBJECT
@@ -23,7 +25,9 @@ public:
         QString playableCell;
         QString playableCellMoveHighlight;
         QString wallSlot;
+        QString wallSlotHover;
         QString intersection;
+        QString intersectionHover;
     };
 
     BoardStyleSheets boardStyles;
@@ -33,6 +37,15 @@ public:
 
     void renderPawn(int row, int col, QColor color);
     void applyBoardStyles();
+
+    void renderWallHoverHighlight(int gridRow, int gridCol);
+    void clearWallHoverHighlight();
+
+    void renderValidPawnMoveHighlights(const QList<QPoint> &moveTargets);
+    void clearValidPawnMoveHighlights();
+
+protected:
+    bool eventFilter(QObject *watched, QEvent *event) override;
 
 private:
     int cellSize = 45;
@@ -46,9 +59,9 @@ private:
     QAbstractButton *getWallCell(int row, int col) const;
 
     void renderBoard();
+    void installWallHoverTracking(QWidget *widget, int gridRow, int gridCol);
 
-    void renderValidPawnMoveHighlights(const QList<QPoint> &moveTargets);
-    void clearValidPawnMoveHighlights();
+    QList<QPoint> m_wallHoverCells;
 
     Ui::gameWindow *ui;
 };
