@@ -1,11 +1,13 @@
+#ifndef GAME_H
+#define GAME_H
+
 #include <iostream>
 #include <vector>
-
 #include "Types.h"
 using namespace std;
 
-
-class GameBoard {
+class GameBoard
+{
 private:
     // Wall placements (8 grooves x 8 grooves)
     int size;
@@ -24,7 +26,7 @@ public:
     // Methods you'll need to implement Phase 1 & 3:
     bool is_valid_pawn_move(Player p, Position target);
     bool is_valid_wall_placement(bool is_horizontal, int r, int c);
-    void movePlayer(Player &player,Position pos);
+    void movePlayer(Player &player, Position pos);
     void placeWall(Position pos, bool isHorizontal);
-
 };
+#endif

@@ -1,38 +1,39 @@
 #include "game.h"
+bool GameBoard::is_valid_wall_placement(bool is_horizontal, int r, int c){
+    bool valid=false;
+    if (r>8 || r<1 || c>8 || c<1) return false;
+        //check for any possible collisions may occur before placing the wall at this position
+        // wall is horizontal then y is const ( row gives me y value , colunmn gives me x value)
+        // wall is  vertival then x is const
+        for (auto& wall: walls){
 
-bool GameBoard::isWallbetween(Wall newWall) {
-    for (Wall& w : walls) {
-        if (newWall.isHorizontal) {
-            // 1. Check against other horizontal walls (Check the Xs)
-            if (w.isHorizontal && w.pos.get_y() == newWall.pos.get_y()) {
-                // If they share the same Y, check if their Xs overlap
-                if (w.pos.get_x() == newWall.pos.get_x() ||         // Exact match
-                    w.pos.get_x() == newWall.pos.get_x() - 1 ||     // Overlaps on the left
-                    w.pos.get_x() == newWall.pos.get_x() + 1) {     // Overlaps on the right
-                    return true; // Wall collision detected
-                }
+            if(wall.isHorizontal && is_horizontal ){
+               if((wall.pos.y==r) && (wall.pos.x==c || wall.pos.x==c-1 || wall.pos.x==c+1))
+                return false; }
+
+            if (! wall.isHorizontal && ! is_horizontal) {
+               if((wall.pos.x==c) && (wall.pos.y==r || wall.pos.y==r-1 || wall.pos.y==r+1))
+                return false; }
+
+            if (is_horizontal && ! wall.isHorizontal){
+                if(wall.pos.y==r && wall.pos.x== c) return false;
             }
-            // 2. Check against vertical walls crossing it
-            else if (!w.isHorizontal && w.pos.get_x() == newWall.pos.get_x() && w.pos.get_y() == newWall.pos.get_y()) {
-                return true; // Plus-sign crossing detected
+
+            if (!is_horizontal && wall.isHorizontal){
+                if(r== wall.pos.y && c==wall.pos.x) return false;
             }
-        } 
-        else { // newWall is Vertical
-            // 1. Check against other vertical walls (Check the Ys)
-            if (!w.isHorizontal && w.pos.get_x() == newWall.pos.get_x()) {
-                // If they share the same X, check if their Ys overlap
-                if (w.pos.get_y() == newWall.pos.get_y() ||         // Exact match
-                    w.pos.get_y() == newWall.pos.get_y() - 1 ||     // Overlaps on the top
-                    w.pos.get_y() == newWall.pos.get_y() + 1) {     // Overlaps on the bottom
-                    return true; // Wall collision detected
-                }
-            }
-            // 2. Check against horizontal walls crossing it
-           else if (!w.isHorizontal && w.pos.get_x() == newWall.pos.get_x() && w.pos.get_y() == newWall.pos.get_y()) {
-                return true; // Plus-sign crossing detected
-            }
+
         }
+
+        //check when the added wall blocks the opponent move or not
+        Wall tempWall={{c,r}, is_horizontal};
+        walls.push_back(tempWall);
+        valid =BFS_search();
+        walls.pop_back();
+
+        return valid;
+
     }
-    
-    return false; // No walls in the way, safe to place!
-}
+
+
+

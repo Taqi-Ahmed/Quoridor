@@ -1,26 +1,22 @@
 #ifndef TYPES_H
 #define TYPES_H
-struct Position {
-private:
+struct Position
+{
     int x;
     int y;
-public:
-    int get_x() {return x;}
-    int get_y() {return y;}
-    void set_x(int new_x) {x = new_x;}
-    void set_y(int new_y) {y = new_y;}
-    bool operator==(const Position& other) const;
-    bool operator<(const Position& other) const;
+
+    bool operator==(const Position &other) const;
+    bool operator<(const Position &other) const;
 };
 
-
-
-struct Wall {
+struct Wall
+{
     Position pos;
     bool isHorizontal;
 };
 
-struct Player {
+struct Player
+{
     Position pos;
     bool won_game;
     int walls_left; // Starts at 10 for a 2-player game
